@@ -1,0 +1,34 @@
+version: '3'
+services:
+  nginx:
+    container_name: nginx
+    image: nginx:latest
+    ports:
+      - 80:80
+    volumes:
+      - ./logs:/var/log/nginx
+
+  filebeat:
+    container_name: filebeat
+    image: docker.elastic.co/beats/filebeat:7.15.0
+    volumes:
+      - ./logs:/var/log/nginx
+      - ./filebeat.yml:/usr/share/filebeat/filebeat.yml
+    command: filebeat -e -strict.perms=false
+
+  telegraf_receiver:
+    container_name: telegraf_receiver
+    image: telegraf:latest
+    volumes:
+      - ./telegraf-1.conf:/etc/telegraf/telegraf.conf
+
+  telegraf_forwarder:
+    container_name: telegraf_forwarder
+    image: telegraf:latest
+    volumes:
+      - ./telegraf-2.conf:/etc/telegraf/telegraf.conf
+  nc_server:
+    container_name: nc_server
+    build: ./netcat_server
+    ports:
+      - "5050:5050"
